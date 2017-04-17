@@ -1,27 +1,35 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from time import time
+import socket,select,threading,sys;
 
-class registerDone(QDialog):
-	def __init__(self,parent=None):
-		super(registerDone,self).__init__(parent)
-		
-		news=QLabel("register new user successfully!")
-		okButton=QPushButton(&Ok)
-		layout=QVBoxLayout()
-		layout.addWidget(news)
-		layout.addWidget(okButton)
-		self.setLayout(layout)
+# host=socket.gethostname()
+host='localhost'
+addr=(host,12321)
 
-		self.connect(okButton,SIGNAL("accepted()"),self,SLOT("accept()"))
-		self.setWindowTitle("User register")
-		print "in the register "
+s=socket.socket()
+s.connect(addr)
+s.send("haha")
 
-	def accept():
-		return
+def lis():
+	me=[s]
+	while True:
+		r,w,e=select.select(me,[],[])
+		if s in r:
+			try:
+				print s.recv(1024)
+			except socket.error:
+				print "socket is error"
+				exit()
 
-if __name__ == '__main__':
-	import sys
-	app=QApplication(sys.argv)
-	form=registerDone()
-	form.show()
-	form.exec_()
+def receivedata():
+	while True:
+		data=s.recv(1024)
+		print data
+	s.close()
+
+def run():
+	t0=threading.Thread(target=receivedata,args=())
+	t0.start()
+	t1=threading.Thread(target=lis,args=())
+	t1.start()
+
+run()

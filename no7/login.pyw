@@ -5,7 +5,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 import ui_login
-import registerdone
+import client
 
 import sqlite3
 
@@ -21,6 +21,9 @@ class Login(QDialog,ui_login.Ui_loginx):
 		#self.__text=unicode(text)
 		self.conn=sqlite3.connect('/root/test.db')
 		# print "init"
+		#self.connect(self.loginButton,SIGNAL("loginTo"),self.loginTo)
+		self.username=None
+		self.passwd=None
 		self.setupUi(self)
 		if not MAC:
 			self.loginButton.setFocusPolicy(Qt.NoFocus)
@@ -50,15 +53,15 @@ class Login(QDialog,ui_login.Ui_loginx):
 		class PasswdError(Exception):pass
 		class UserError(Exception):pass
 		uflag=False
-		username=unicode(self.userLineEdit.text())
-		passwd=unicode(self.passWordLineEdit.text())
+		self.username=unicode(self.userLineEdit.text())
+		self.passwd=unicode(self.passWordLineEdit.text())
 		cursor=self.conn.execute("select username,password from user")
 		try:			
 			for row in cursor:
 				tempusername=row[0]
 				temppasswd=row[1]
-				if username==tempusername:
-					if passwd==temppasswd:
+				if self.username==tempusername:
+					if self.passwd==temppasswd:
 						#print "in"
 						uflag=True
 						self.emit(SIGNAL("loginTo"))
@@ -80,8 +83,8 @@ class Login(QDialog,ui_login.Ui_loginx):
 	@pyqtSlot()
 	def on_registerButton_clicked(self):
 		# print "cliked"
-		username=unicode(self.userLineEdit.text())
-		passwd=unicode(self.passWordLineEdit.text())
+		self.username=unicode(self.userLineEdit.text())
+		self.passwd=unicode(self.passWordLineEdit.text())
 		self.conn.execute("insert into user (username,password)\
 			values (?,?)",(username,passwd))
 		QMessageBox.information(None,"User register","register new user successfully!")
@@ -89,7 +92,8 @@ class Login(QDialog,ui_login.Ui_loginx):
 
 
 def loginTo():
-	a=registerdone.registerDone()
+	a=client.clientv(form.username,form.passwd)
+	# print form.username
 	form.close()
 	a.show()
 	a.exec_()
