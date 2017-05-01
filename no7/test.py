@@ -32,7 +32,8 @@
 # 	print b
 # conn.close()
 
-import time
-ISOTIMEFORMAT='%Y-%m-%d %X'
-ti=time.strftime(ISOTIMEFORMAT,time.localtime())
-print type(ti)
+# import time
+# ISOTIMEFORMAT='%Y-%m-%d %X'
+# ti=time.strftime(ISOTIMEFORMAT,time.localtime())
+# print type(ti)
+

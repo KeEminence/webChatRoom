@@ -21,17 +21,21 @@ inputs=[]
 fd_name={}  
 namelist=[]
 
-# Connect to the sqlite table key to store the in and left keyword
+# Connect to the sqlite table key to store the in and left keyword and filekey
 conn=sqlite3.connect('/root/test.db')
 on=uuid.uuid1()
 out=uuid.uuid1()
+filestartkey=uuid.uuid1()
+fileendkey=uuid.uuid1()
 
 ons=str(on)
 outs=str(out)
+filestartkeys=str(filestartkey)
+fileendkeys=str(fileendkey)
 
 conn.execute("delete from key")
 conn.commit()
-conn.execute("insert into key (onkey,outkey) values (?,?)",(ons,outs))
+conn.execute("insert into key (onkey,outkey,fileStartkey,fileEndkey) values (?,?,?,?)",(ons,outs,filestartkeys,fileendkeys))
 conn.commit()
 conn.close()
 
@@ -64,12 +68,22 @@ def new_coming(ss):
         name=client.recv(1024)  
         inputs.append(client)  
         fd_name[client]=name  
-        fdata=name+' come '+ti
+        fdata=name+' come '+ti+"\n"
         f.write(fdata)
         return (client,name)         
     except Exception,e:  
         print e  
-      
+
+# Send the message to other clients     
+def sendData(ss,temp,data):
+    for other in inputs:  
+        if other!=ss and other!=temp:  
+            try:  
+                other.send(data)  
+            except Exception,e:  
+                print e 
+
+
 def server_run():  
     global ti,namelist,fd_name
     ss=conn()  
@@ -83,7 +97,7 @@ def server_run():
                     for other in inputs:
                         # if other!=newComer and other!=ss:
 
-                        # Tell other users that are online(inclued itself) that somebody is come to the room
+                        # Tell other users that are online that somebody is come to the room
                         if other!=ss:
                             try:
                                 namelist=who_in_room(fd_name)
@@ -96,10 +110,36 @@ def server_run():
                     disconnect=False  
                     try:  
                         data= temp.recv(1024)  
+                        # print data
                         if data:
-                        	# chat message
-                            data=fd_name[temp]+' : '+data 
-                            f.write(data)
+                        	# Represent it is a file
+                            if data.startswith(filestartkeys):
+                            	fdata=fd_name[temp]+' upload a txt file'
+                                f.write(fdata)
+                                # print "i am in the s"
+                                if data.endswith(fileendkeys):
+                                    # print "and then i am in the end"
+                                    sendData(ss,temp,data)
+                                    data=None
+                                else:
+                                    sendData(ss,temp,data)
+                                    while 1:
+                                        data=temp.recv(1024)
+                                        # It is the last block of the file
+                                        if data.endswith(fileendkeys):
+                                            # print "i am in the end"
+                                            sendData(ss,temp,data)
+                                            data=None
+                                            break
+                                        else:
+                                        	# the center of the file
+                                            sendData(ss,temp,data)
+                            else:
+                            # chat message
+                                ti=time.strftime(ISOTIMEFORMAT,time.localtime())
+                                data=fd_name[temp]+' : '+data+' '+ti
+                                fdata=data+"\n"
+                                f.write(fdata)
                         else:
                         	# some left room because no message was sent
                             leaveName=fd_name[temp]
@@ -114,25 +154,19 @@ def server_run():
                         namelist=who_in_room(fd_name)
                         ti=time.strftime(ISOTIMEFORMAT,time.localtime())
                         data=leaveName+' leave the chat room; '+str(namelist)+'; '+ti+'; '+ons
-                        fdata=leaveName+' left '+ti
+                        fdata=leaveName+' left '+ti+"\n"
                         f.write(fdata)
-                        for other in inputs:  
-                            if other!=ss and other!=temp:  
-                                try:  
-                                    other.send(data) 
-                                except Exception,e:  
-                                    print e                                                
+                        sendData(ss,temp,data)                                              
                     else:  
                     	# Send the chat message
-                        for other in inputs:  
-                            if other!=ss and other!=temp:  
-                                try:  
-                                    other.send(data)  
-                                except Exception,e:  
-                                    print e  
+                    	if data:
+                            sendData(ss,temp,data)
+                            # print data
         except Exception,e:
             f.close()
      
 if __name__=='__main__':  
-    server_run()  
+    server_run() 
+
+
 

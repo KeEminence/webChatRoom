@@ -39,6 +39,7 @@ class Login(QDialog,ui_login.Ui_loginx):
 	# When you edit a user password, the UI update itself too.
 	@pyqtSlot(QString)
 	def on_passWordLineEdit_textEdited(self):
+		self.passWordLineEdit.setEchoMode(2)
 		self.updateUi()
 
 	# If you edit something on the editline, it enables the button to login or register.
