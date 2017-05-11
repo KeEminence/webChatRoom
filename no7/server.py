@@ -114,7 +114,7 @@ def server_run():
                         if data:
                         	# Represent it is a file
                             if data.startswith(filestartkeys):
-                            	fdata=fd_name[temp]+' upload a txt file'
+                            	fdata=fd_name[temp]+' upload a txt file'+"\n"
                                 f.write(fdata)
                                 # print "i am in the s"
                                 if data.endswith(fileendkeys):
@@ -153,7 +153,7 @@ def server_run():
                         del fd_name[temp] 
                         namelist=who_in_room(fd_name)
                         ti=time.strftime(ISOTIMEFORMAT,time.localtime())
-                        data=leaveName+' leave the chat room; '+str(namelist)+'; '+ti+'; '+ons
+                        data=leaveName+' leave the chat room; '+str(namelist)+'; '+ti+'; '+outs
                         fdata=leaveName+' left '+ti+"\n"
                         f.write(fdata)
                         sendData(ss,temp,data)                                              

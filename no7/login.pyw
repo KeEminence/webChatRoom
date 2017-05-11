@@ -44,9 +44,17 @@ class Login(QDialog,ui_login.Ui_loginx):
 
 	# If you edit something on the editline, it enables the button to login or register.
 	def updateUi(self):
-		enable=not (self.userLineEdit.text().isEmpty() and self.passWordLineEdit.text().isEmpty())
-		self.loginButton.setEnabled(enable)
-		self.registerButton.setEnabled(enable)
+		# enable=not (self.userLineEdit.text().isEmpty() and self.passWordLineEdit.text().isEmpty())
+		# self.loginButton.setEnabled(enable)
+		# self.registerButton.setEnabled(enable)
+		if self.userLineEdit.text().isEmpty() or self.passWordLineEdit.text().isEmpty():
+			enable=0
+			self.loginButton.setEnabled(enable)
+			self.registerButton.setEnabled(enable)
+		else:
+			enable=1
+			self.loginButton.setEnabled(enable)
+			self.registerButton.setEnabled(enable)
 
 	# When you click the login button, what heppens.
 	@pyqtSlot()
@@ -87,12 +95,14 @@ class Login(QDialog,ui_login.Ui_loginx):
 			self.username=unicode(self.userLineEdit.text())
 			self.passwd=unicode(self.passWordLineEdit.text())
 			# Insert the new user to the sqlite
+			# print self.username
+			# print self.passwd
 			self.conn.execute("insert into user (username,password)\
 				values (?,?)",(self.username,self.passwd))
 			QMessageBox.information(None,"User register","register new user successfully!")
 			self.conn.commit()
 		except Exception,e:
-			QMessageBox.information(None,"User register","register new user failed! please check whether you has registered the user or forget the password!")
+			QMessageBox.warning(self,"User register","register new user failed! please check whether you has registered the user!")
 
 # close the login UI and open the chat room UI
 def loginTo():
